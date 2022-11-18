@@ -42,23 +42,79 @@ function Dashboard () {
         getDirMissedTime();
     },[])
 
+    const [moveAllMissed, setmoveAllMissed]=useState("");
+    async function moveAllMissedFile(filepath){
+        await fetch('/moveAllMissedFile', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            DirList: directoryApiResponse
+          })
+        })
+        .then(res => res.text())
+        .then(res => setmoveAllMissed(res))           
+    };
+
+    const [moveAllMissedInstant, setMoveAllMissedInstant]=useState("");
+    async function moveAllMissedInstantFile(filepath){
+        await fetch('/moveAllMissedInstantFile', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            FileList: imageURL
+          })
+        })
+        .then(res => res.text())
+        .then(function(res){            
+            setmoveAllMissed(res);
+            setImageURL([]);
+        })           
+    };
+
+
     const [currentTime, setCurrentTime]=useState(new Date());
     const [dirTime, setDirTime]=useState(null);
     useEffect(()=>{
         var seconds=0;
+        if(moveAllMissed!=null && moveAllMissed!="")
+        {
+            if(moveAllMissed=="OK")
+            {
+                // alert('All Missed File Moved Successfully')
+                setmoveAllMissed("")
+                setCurrentTime(new Date())
+                let endDate = new Date();
+                // Do your operations
+                let startDate  = currentTime;
+                let diff = endDate - startDate;
+                seconds = Math.floor(diff / 1000);
+                setDirTime(dirMissedTime-seconds)
+            }
+        }
+        var interval;
         if(dirTime==null || dirTime>0)
         {
-            let interval=setInterval(
+            interval=setInterval(
                 function(){
                     let endDate = new Date();
                     // Do your operations
                     let startDate  = currentTime;
                     let diff = endDate - startDate;
                     seconds = Math.floor(diff / 1000);
-                    setDirTime(missedAlertTime-seconds)
+                    setDirTime(dirMissedTime-seconds)
                 },1000)
             return ()=>clearInterval(interval); 
-        } 
+        }
+        else{
+            moveAllMissedFile();
+            return ()=>clearInterval(interval); 
+        }
     })
 
     useEffect(()=>{
@@ -221,12 +277,14 @@ function Dashboard () {
                 {directoryApiResponse[activeRowIndex.current].Files.map((file,index)=>{
                     if(file.ImageUrl!="")
                     {
-                        setImageURL(imageURL=>[...imageURL,file.ImageUrl])
+                        setImageURL(imageURL=>[...imageURL,{ImageUrl:file.ImageUrl,FileName:file.FileName,FilePath:file.FilePath,IsChecked: false}])
                     }
                 })}
             </div>
-        )        
+        )       
     }
+
+
 
     function onClickFunc(_event, direction) {
         if(direction=="Next")
@@ -433,6 +491,27 @@ function Dashboard () {
         }
     },[isMoveCompiledFile])
 
+    function UpdateChk(e,chkIndex){
+        setImageURL(imageURL=> imageURL.map((item,index) => {
+            if(chkIndex==index)
+            {
+                return {
+                    ...item,
+                    ImageUrl:item.ImageUrl,
+                    FileName:item.FileName,
+                    FilePath:item.FilePath,
+                    IsChecked:e.target.checked
+                }
+            }
+            else{
+                return {
+                    ...item
+                }
+            }           
+        }))     
+    }
+    
+
     return(
         <div>
         <Header></Header>
@@ -561,15 +640,15 @@ function Dashboard () {
 
                             <div className="carousel-inner img-fx-width" role="listbox">
                                 {/* <div>{imageFileName}</div> */}
-                                {imageURL.map((imgurl,index)=>{
+                                {imageURL.map((img,index)=>{
                                     if(index==0){
                                     return(
                                         <div key={index} className="item active">
                                         
-                                        <img key={index} src={imgurl}></img>
+                                        <img key={index} src={img.ImageUrl}></img>
                                         <div className='checkbox'>
                                             <input id={index} key={index} type="checkbox"></input>
-                                            <label for={index}></label>
+                                            <label for={index} ></label>
                                             </div>
                                         </div>
                                     )
@@ -578,7 +657,7 @@ function Dashboard () {
                                     return(
                                         <div key={index} className="item">
                                         
-                                        <img key={index} src={imgurl}></img>
+                                        <img key={index} src={img.ImageUrl}></img>
                                         <div className='checkbox'>
                                             <input id={index} key={index} type="checkbox"></input>
                                             <label for={index}></label>
@@ -616,7 +695,7 @@ function Dashboard () {
                                 <div className='row'>
                                     <div className='col-xl-6 col-md-6 col-lg-12'>
                                     <button type="button" className="btn btn-success mt-2 toastr_success"
-                                    onClick={()=>MoveInstantFile()}
+                                    onClick={()=>moveAllMissedInstantFile()}
                                     >Instant Report</button>
                                     </div>
                                     {/* <div className='col-xl-6 col-md-6 col-lg-12 text-right'>

@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import "./App.css";
-import {HashRouter,Routes,Route,Navigate,} from "react-router-dom";
+import {BrowserRouter,Routes,Route,Navigate,} from "react-router-dom";
 
 import Login from "./components/Login/login";
 import Dashboard from "./components/DashBaord/dashboard";
@@ -8,14 +8,14 @@ import Dashboard from "./components/DashBaord/dashboard";
 class App extends Component {
   render(){
     return (
-      <HashRouter>        
+      <BrowserRouter>        
         <React.Fragment>
           <Routes>
             <Route exact path="/" element={<Login/>} />
             <Route exact path="/dashboard" element={<Dashboard/>} />
           </Routes>
         </React.Fragment>
-      </HashRouter>
+      </BrowserRouter>
       // <div className="App">
       //   <header className="App-header">
       //     <img src={logo} className="App-logo" alt="logo" />
