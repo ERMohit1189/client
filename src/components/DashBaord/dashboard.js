@@ -28,7 +28,7 @@ function Dashboard () {
     async function getDirRefreshTime() {
         await fetch("/dirRefreshTimeAPI")
               .then(res => res.json())
-              .then(res => setDirRefreshTime(res));                           
+              .then(res => setDirRefreshTime(res))                        
     };
 
     const [dirMissedTime, setDirMissedTime]=useState(null);
