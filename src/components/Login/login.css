@@ -1,0 +1,8 @@
+@import url(./css/bootstrap.min.css);
+@import url(./css/style.css);
+
+.Login {
+    text-align: center;
+}
+.login-2 .form-section a.forgot-password{font-size:17px;}
+.login-2 .logo-2 img{height:169px; margin-bottom:0;}

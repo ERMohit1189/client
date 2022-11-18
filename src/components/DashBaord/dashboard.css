@@ -1,0 +1,133 @@
+body {font-family: Arial;}
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px 12px;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+div.search input[type=text] {
+  padding: 5px;
+  font-size: 17px;
+  border: 1px solid grey;
+  float: left;
+  width: 50%;
+  background: #fff;
+}
+
+div.search #btnsearch {
+  float: left;
+  width: 20%;
+  padding: 5px;
+  background: #f1f1f1;;
+  color: #000;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none;
+  cursor: pointer;
+}
+
+div.search button:hover {
+  background: #ccc;
+}
+
+div.search::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+div.search #btnsort {
+  float: right;
+  width: 28%;
+  padding: 5px;
+  background: #f1f1f1;;
+  color: #000;
+  font-size: 17px;
+  border: 1px solid grey;
+  cursor: pointer;
+}
+
+#exTab1 ul{border-top:solid 1px #000; border-right:solid 1px #000;}
+#exTab1 ul li{border-left:#000 solid 1px; margin:0;}
+
+#exTab1 ul li a{
+  float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 10px 19px;
+    font-size: 14px;
+    text-decoration:none;
+    color:#000;
+    border-radius:0;
+}
+
+#exTab1 ul li.active a{background-color: #ccc;}
+#exTab1 .tab-content{border:solid 1px #000; padding:10px;}
+.checkbox{position:absolute; right:0; top: 465px; left:50%; font-size:20px;}
+.checkbox input{width:20px; height:20px;margin-left: 0px !important;margin: 0 0 0 0 !important; }
+.img-fx-width{
+  width:100% !important;
+  height:500px !important;
+}
+.selected-dir{
+  font-size:12px !important;
+  font-weight:600 !important;
+}
+
+
+input[type="checkbox"] + label {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e91212;
+  border-radius: 2px;
+  cursor: pointer;
+}
+input[type="checkbox"]:checked + label:after {
+  position: relative;
+  top: -8px;
+  left: -15px;
+  content: '\2714';
+  font-size: 14px;
+  color: #fff;
+}
+input[type="checkbox"] {
+  display: none;
+}
