@@ -4,6 +4,7 @@ import Footer from "./footer";
 import './dashboard.css'
 import { Fragment } from "react";
 import Moment from 'moment';
+import Gallery from './Gallery';
 
 
 function Dashboard () {
@@ -71,9 +72,11 @@ function Dashboard () {
           })
         })
         .then(res => res.text())
-        .then(function(res){            
+        .then(async function(res){            
             setmoveAllMissed(res);
             setImageURL([]);
+            getClosedAlert();
+            getMissedAlert();
         })           
     };
 
@@ -122,7 +125,6 @@ function Dashboard () {
         if(dirRefreshTime!=null){
             const timer = setInterval(function (){
                 callAPI();
-                console.log(new Date().toTimeString())
             },dirRefreshTime*1000)
             return () => clearInterval(timer);
         } 
@@ -175,7 +177,8 @@ function Dashboard () {
     const activePointRef = React.useRef(nextImage);
 
     async function setActivePoint(nextVal) {       
-        if(nextVal>=directoryApiResponse[activeRowIndex.current].Files.length || nextVal<0)
+        if(nextVal>=directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files.length || nextVal<0)
         {
             nextVal=0
         }
@@ -186,8 +189,10 @@ function Dashboard () {
     const [selectedDirectory, setDirectoryForTransfer]=useState([]);
 
     function selectedFolder() {       
-        setDirectoryForTransfer(directoryApiResponse[activeRowIndex.current]);
-        if(directoryApiResponse.length>0)
+        setDirectoryForTransfer(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current]);
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i"))).length>0)
         {
             let updatedValue = {};
             updatedValue = {"StartTime": Moment(new Date()).format("DD-MMM-YYYY HH:mm:ss")};
@@ -215,9 +220,11 @@ function Dashboard () {
     const [selectedDirFilles, setDirFiles]=useState([]);
 
     async function createDirFilesList() { 
-        if(directoryApiResponse.length>0 && selectedDirectory.DirName!=null && selectedDirectory.DirName!='')
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i"))).length>0 && selectedDirectory.DirName!=null && selectedDirectory.DirName!='')
         {
-        setDirFiles(directoryApiResponse[activeRowIndex.current].Files)
+        setDirFiles(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files)
         setDirFiles(selectedDirFilles=> selectedDirFilles.map(item => {
             var endDate = new Date();
             // Do your operations
@@ -243,7 +250,12 @@ function Dashboard () {
                     }
                 }              
             }))     
-        }   
+        }
+        else
+        {
+            setDirFiles([])
+        }
+           
     }
 
 
@@ -270,18 +282,23 @@ function Dashboard () {
     const [imageURL,setImageURL]=useState([]);
     const RenderImage= () => {
         setImageURL([]);
-        if(directoryApiResponse.length>0)
-        if(directoryApiResponse[activeRowIndex.current].Files.length>0)
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i"))).length>0)
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files.length>0)
+        <>
         return(
-            <div>
-                {directoryApiResponse[activeRowIndex.current].Files.map((file,index)=>{
-                    if(file.ImageUrl!="")
-                    {
-                        setImageURL(imageURL=>[...imageURL,{ImageUrl:file.ImageUrl,FileName:file.FileName,FilePath:file.FilePath,IsChecked: false}])
-                    }
-                })}
-            </div>
-        )       
+            {directoryApiResponse.filter(dir=>dir.Files.length>0)
+                .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))
+                [activeRowIndex.current].Files.map((file,index)=>{
+            if(file.ImageUrl!="")
+            {
+            setImageURL(imageURL=>[...imageURL,{ImageUrl:file.ImageUrl,FileName:file.FileName,FilePath:file.FilePath,IsChecked: false}])
+            }
+            })}
+        )
+        </>
+        else setImageURL([])       
     }
 
 
@@ -303,12 +320,17 @@ function Dashboard () {
     }
 
     async function NextImage(nxtImage){
-        if(directoryApiResponse.length>0 && directoryApiResponse[activeRowIndex.current].Files.length>0) 
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i"))).length>0 && directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files.length>0) 
         {
-            if(nxtImage<directoryApiResponse[activeRowIndex.current].Files.length)
+            if(nxtImage<directoryApiResponse.filter(dir=>dir.Files.length>0)
+            .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files.length)
             {   
-                var filepath=directoryApiResponse[activeRowIndex.current].Files[nxtImage].FilePath;
-                var filename=directoryApiResponse[activeRowIndex.current].Files[nxtImage].FileName;
+                var filepath=directoryApiResponse.filter(dir=>dir.Files.length>0)
+                .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[nxtImage].FilePath;
+                var filename=directoryApiResponse.filter(dir=>dir.Files.length>0)
+                .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[nxtImage].FileName;
                 if(filename!=null)
                 {
                     await callPostAPI(filepath,filename);
@@ -338,12 +360,16 @@ function Dashboard () {
     // },[sliderRefreshTime,count]);
 
     function PrevImage(nxtImage){
-        if(directoryApiResponse.length>0 && directoryApiResponse[activeRowIndex.current].Files.length>0) 
+        if(directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i"))).length>0 && directoryApiResponse.filter(dir=>dir.Files.length>0)
+        .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files.length>0) 
         {
             if(nxtImage>=0)
             {
-                var filepath=directoryApiResponse[activeRowIndex.current].Files[nxtImage].FilePath;
-                var filename=directoryApiResponse[activeRowIndex.current].Files[nxtImage].FileName;
+                var filepath=directoryApiResponse.filter(dir=>dir.Files.length>0)
+                .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[nxtImage].FilePath;
+                var filename=directoryApiResponse.filter(dir=>dir.Files.length>0)
+                .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[nxtImage].FileName;
                 if(filename!=null)
                 {
                     callPostAPI(filepath,filename);
@@ -442,7 +468,8 @@ function Dashboard () {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            FilePath: directoryApiResponse[activeRowIndex.current].Files[activePointRef.current].FilePath
+            FilePath: directoryApiResponse.filter(dir=>dir.Files.length>0)
+            .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[activePointRef.current].FilePath
           })
         })
         .then(res => res.text())
@@ -472,7 +499,8 @@ function Dashboard () {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            FilePath: directoryApiResponse[activeRowIndex.current].Files[activePointRef.current].FilePath
+            FilePath: directoryApiResponse.filter(dir=>dir.Files.length>0)
+            .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))[activeRowIndex.current].Files[activePointRef.current].FilePath
           })
         })
         .then(res => res.text())
@@ -510,6 +538,28 @@ function Dashboard () {
             }           
         }))     
     }
+
+    const [searchText,setsearchText]=useState();
+    const onSearchTextChange=(e)=>{
+        setsearchText(e.target.value);
+    }
+
+    const [sort,setSort]=useState("d");
+    const onSortbtnClick=(e)=>{
+        if(sort=="d")
+        setSort("a")
+        else
+        setSort("d")
+        if(sort=="d")
+        setDirectoryApiResponse(directoryApiResponse.sort((a, b) => {
+            return new Date(b.DirTime) - new Date(a.DirTime); // descending
+          }))
+        else
+        setDirectoryApiResponse(directoryApiResponse.sort((a, b) => {
+            return new Date(a.DirTime) - new Date(b.DirTime); // descending
+          }))
+    }
+    
     
 
     return(
@@ -543,10 +593,16 @@ function Dashboard () {
                                             <div className="tab-content clearfix">
                                             <div className="tab-pane active" id="1a">
                                             <div className="search">
-                                <input type="text" placeholder="Search.." name="search2" />
-                                <button id="btnsearch" type="submit"><i className="fa fa-search"></i></button>
-                                <button id="btnsort" type="submit">
-                                    <i className="fa fa-sort-amount-desc" aria-hidden="true"></i>
+                                <input type="text" placeholder="Search.." name="search2" value={searchText} onChange={(e)=>onSearchTextChange(e)} />
+                                {/* <button id="btnsearch" type="submit" value={searchText} onChange={(e)=>onSearchTextChange(e)}><i className="fa fa-search" ></i></button> */}
+                                <button id="btnsort" type="button" onClick={(e)=>onSortbtnClick(e)}>
+                                    {
+                                        sort==='d'?
+                                        <i className="fa fa-sort-amount-desc" aria-hidden="true"></i>
+                                        :
+                                        <i className="fa fa-sort-amount-asc" aria-hidden="true"></i>
+                                    }
+                                    
                                 <span>Sort by</span></button>
                                 </div>
                                 <div id="Active" className="single-table">
@@ -564,10 +620,12 @@ function Dashboard () {
                                             </tr>
                                             </thead>  
                                             <tbody>                                          
-                                            {directoryApiResponse.map((dir, dirIndex) => {
-                                            return (
-                                                <RenderTableRow key={dirIndex.toString()} index={dirIndex} dir={dir} ></RenderTableRow>
-                                            );                                                
+                                            {directoryApiResponse.filter(dir=>dir.Files.length>0)
+                                            .filter(dir=> dir.DirName.match(new RegExp(searchText, "i")))
+                                            .map((dir, dirIndex) => {
+                                                return (
+                                                    <RenderTableRow key={dirIndex.toString()} index={dirIndex} dir={dir} ></RenderTableRow>
+                                                );                                                
                                             })} 
                                             </tbody>       
                                         </table>
@@ -636,61 +694,7 @@ function Dashboard () {
                                 <br></br>
                                 <span>{'Selected Dir. Time: '+selectedDirectory.DirTime}</span>
                             </div>
-                            <div id="myCarousel" className="carousel slide" data-ride="carousel">
-
-                            <div className="carousel-inner img-fx-width" role="listbox">
-                                {/* <div>{imageFileName}</div> */}
-                                {imageURL.map((img,index)=>{
-                                    if(index==0){
-                                    return(
-                                        <div key={index} className="item active">
-                                        
-                                        <img key={index} src={img.ImageUrl}></img>
-                                        <div className='checkbox'>
-                                            <input id={index} key={index} type="checkbox"></input>
-                                            <label for={index} ></label>
-                                            </div>
-                                        </div>
-                                    )
-                                }
-                                else{
-                                    return(
-                                        <div key={index} className="item">
-                                        
-                                        <img key={index} src={img.ImageUrl}></img>
-                                        <div className='checkbox'>
-                                            <input id={index} key={index} type="checkbox"></input>
-                                            <label for={index}></label>
-                                            </div>
-                                        </div>
-                                       
-                                )
-                                }
-                                })}       
-                               
-                                    {/* {directoryApiResponse[activeRowIndex.current].Files.map((dir, index) => {
-                                        // <RenderImage Files={dir.Files}></RenderImage>
-                                        dir.Files.map((file,fileindex)=>{
-                                            if(file.FilePath!=""){
-                                                <img key={fileindex} src={file.FilePath}></img> 
-                                            }
-                                        })
-                                    })} */}
-                            </div>
-
-                                <a className="left carousel-control" href="#myCarousel" role="button" data-slide="prev"
-                                // onClick={(event) => onClickFunc(event, "Prev")}
-                                >
-                                <span className="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                                <span className="sr-only">Previous</span>
-                                </a>
-                                <a className="right carousel-control" href="#myCarousel" role="button" data-slide="next"
-                                // onClick={(event) => onClickFunc(event, "Next")}
-                                >
-                                <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                                <span className="sr-only">Next</span>
-                                </a>
-                            </div>
+                            <Gallery ImageList={imageURL} UpdateChk={UpdateChk}></Gallery>
                             
                                 <div className='row'>
                                     <div className='col-xl-6 col-md-6 col-lg-12'>
@@ -707,7 +711,7 @@ function Dashboard () {
                             </div>
                         </div>
                     </div>
-                    <div className="col-xl-4 col-md-4 col-lg-12" style={{display:'none'}}>
+                    <div className="col-xl-4 col-md-4 col-lg-12" style={{display:"none"}}>
                         <div className="card">
                             <div className="card-body">
                                 {/* <h3>Selected Folder</h3>
