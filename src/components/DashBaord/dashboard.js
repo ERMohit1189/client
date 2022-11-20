@@ -601,6 +601,7 @@ function Dashboard () {
                                         <i className="fa fa-sort-amount-desc" aria-hidden="true"></i>
                                         :
                                         <i className="fa fa-sort-amount-asc" aria-hidden="true"></i>
+                                        ll
                                     }
                                     
                                 <span>Sort by</span></button>
